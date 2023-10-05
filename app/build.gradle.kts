@@ -27,6 +27,15 @@ dependencies {
 
     //Discord4J
     implementation("com.discord4j:discord4j-core:3.2.6")
+
+    //Reflections
+    implementation("org.reflections:reflections:0.10.2")
+
+    //Logback
+    implementation("ch.qos.logback:logback-classic:1.2.9")
+
+    //Reactor
+    implementation("io.projectreactor:reactor-core:3.5.10")
 }
 
 // Apply a specific Java toolchain to ease working on different environments.

@@ -2,10 +2,15 @@ package pollorb.launcher;
 
 
 import com.google.gson.Gson;
-import discord4j.core.DiscordClient;
+import discord4j.core.DiscordClientBuilder;
+import discord4j.core.GatewayDiscordClient;
+import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
+import discord4j.core.event.domain.interaction.MessageInteractionEvent;
 import discord4j.core.event.domain.message.MessageCreateEvent;
-import discord4j.core.object.entity.Message;
-import reactor.core.publisher.Mono;
+import pollorb.commands.CommandRegistrar;
+import pollorb.commands.listeners.CommandListener;
+import reactor.util.Logger;
+import reactor.util.Loggers;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -18,6 +23,11 @@ import java.nio.file.Path;
  */
 public class Launcher {
 
+    private static final Logger logger = Loggers.getLogger(Launcher.class);
+
+    /**
+     * Main class for launching PollOrb
+     */
     public static void main(String[] args) {
         Config config;
         Gson gson = new Gson();
@@ -28,17 +38,19 @@ public class Launcher {
             throw new RuntimeException(e);
         }
 
-        DiscordClient.create(config.token)
-            .withGateway(gatewayDiscordClient ->
-                gatewayDiscordClient.on(MessageCreateEvent.class, messageCreateEvent -> {
-                    Message message = messageCreateEvent.getMessage();
+        logger.info("Initializing Bot");
+        CommandRegistrar.init();
+        CommandListener.init();
 
-                    if (message.getContent().equalsIgnoreCase("!ping")) {
-                        return message.getChannel().flatMap(messageChannel -> messageChannel.createMessage("Pong!"));
-                    }
+        logger.info("Initializing connection");
+        final GatewayDiscordClient client = DiscordClientBuilder.create(config.token)
+            .build()
+            .login()
+            .block();
 
-                    return Mono.empty();
-            }))
+        assert client != null;
+        client.on(MessageCreateEvent.class, CommandListener::handle)
+            .then(client.onDisconnect())
             .block();
     }
 }
