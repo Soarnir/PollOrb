@@ -2,6 +2,12 @@ package pollorb.commands;
 
 import discord4j.core.object.entity.Role;
 
+/**
+ * Enum representation of command requirements
+ *
+ * @author Soarnir
+ * @since 0.1.0
+ */
 public enum ContextualRequirements {
     USER(),
     ROLE(Role.class),

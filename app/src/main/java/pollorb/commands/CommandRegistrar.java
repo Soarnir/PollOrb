@@ -1,11 +1,16 @@
 package pollorb.commands;
 
-import java.lang.reflect.Modifier;
-import java.util.*;
-
+import discord4j.core.object.command.ApplicationCommandOption;
+import discord4j.discordjson.json.ApplicationCommandData;
+import discord4j.discordjson.json.ApplicationCommandRequest;
+import discord4j.rest.RestClient;
 import org.reflections.Reflections;
+import reactor.core.publisher.Flux;
 import reactor.util.Logger;
 import reactor.util.Loggers;
+
+import java.lang.reflect.Modifier;
+import java.util.*;
 
 /**
  * Reflectively analyzes all command files and generates command maps
@@ -58,13 +63,31 @@ public class CommandRegistrar {
         logger.info("Command Handler initialized");
     }
 
-    private static void registerSlashCommands() {
+    public static Flux<ApplicationCommandData> registerSlashCommands(RestClient restClient, long devGuild) {
+        long appId = restClient.getApplicationId().block();
+        List<ApplicationCommandRequest> commandRequestList = new ArrayList<>();
+
         slashCommands.values().forEach(slashCommand -> {
-            logger.info("info");
+            logger.debug("Building slash command: " + slashCommand.getName());
+            ApplicationCommandRequest request = ApplicationCommandRequest.builder()
+                .name(slashCommand.getName())
+                .description(slashCommand.getDescription())
+                .type(ApplicationCommandOption.Type.STRING.getValue())
+                .build();
+            commandRequestList.add(request);
         });
+
+        return restClient.getApplicationService().bulkOverwriteGuildApplicationCommand(appId, devGuild, commandRequestList)
+            .doOnNext(slashCommand -> logger.debug("Successfully registered slash command: " + slashCommand.name()))
+            .doOnError(error -> logger.error("Failed to register slash command", error));
+
     }
 
     public static Map<String, AbstractCommand> getCommandMap() {
         return commands;
+    }
+
+    public static Map<String, AbstractSlashCommand> getSlashCommandMap() {
+        return slashCommands;
     }
 }
