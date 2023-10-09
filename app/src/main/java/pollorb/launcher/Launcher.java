@@ -1,20 +1,20 @@
 package pollorb.launcher;
 
-
 import com.google.gson.Gson;
-import discord4j.core.DiscordClientBuilder;
-import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
-import discord4j.core.event.domain.message.MessageCreateEvent;
-import org.reactivestreams.Publisher;
+import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.requests.GatewayIntent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 import pollorb.commands.CommandRegistrar;
 import pollorb.commands.listeners.CommandListener;
-import reactor.core.publisher.Mono;
-import reactor.util.Logger;
-import reactor.util.Loggers;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.EnumSet;
 
 /**
  * Main class from which bot will launch
@@ -22,11 +22,13 @@ import java.nio.file.Path;
  * @author Soarnir
  * @since 0.1.0
  */
+@SpringBootApplication
 public class Launcher {
 
-    private static final Logger logger = Loggers.getLogger(Launcher.class);
+    private static final Logger logger = LoggerFactory.getLogger(Launcher.class);
 
     public static void main(String[] args) {
+        SpringApplication.run(Launcher.class, args);
         // Initialize config with GSON
         Config config;
         Gson gson = new Gson();
@@ -43,17 +45,28 @@ public class Launcher {
         CommandRegistrar.init();
         CommandListener.init();
 
-        // Create DiscordClient and register listeners
+
+        EnumSet<GatewayIntent> intents = EnumSet.of(
+            GatewayIntent.GUILD_MESSAGES,
+            GatewayIntent.MESSAGE_CONTENT,
+            GatewayIntent.GUILD_MESSAGE_REACTIONS
+        );
+
+        // Create JDA object and register listeners
         logger.info("Initializing connection");
-        DiscordClientBuilder.create(config.token).build()
-            .withGateway(client -> {
-                Publisher<?> onSlashCommand = client.on(ChatInputInteractionEvent.class, CommandListener::handle);
+        try {
+            JDA jda = JDABuilder.createLight(config.token, intents)
+                .addEventListeners(new CommandListener())
+                .build();
 
-                Publisher<?> onMessageCommand = client.on(MessageCreateEvent.class, CommandListener::handle);
+            jda.awaitReady();
 
-                return CommandRegistrar.registerSlashCommands(client.getRestClient(), config.dev_guild)
-                    .then(Mono.when(onSlashCommand, onMessageCommand));
-            })
-            .block();
+            CommandRegistrar.registerSlashCommands(jda, config.dev_guild);
+
+            jda.getRestPing().queue(ping -> logger.info("Logged in with ping: " + ping));
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
     }
 }

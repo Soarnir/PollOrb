@@ -1,16 +1,18 @@
 package pollorb.commands;
 
-import discord4j.core.object.command.ApplicationCommandOption;
-import discord4j.discordjson.json.ApplicationCommandData;
-import discord4j.discordjson.json.ApplicationCommandRequest;
-import discord4j.rest.RestClient;
+import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.interactions.commands.build.Commands;
+import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
+import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
 import org.reflections.Reflections;
-import reactor.core.publisher.Flux;
-import reactor.util.Logger;
-import reactor.util.Loggers;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Modifier;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * Reflectively analyzes all command files and generates command maps
@@ -22,7 +24,7 @@ import java.util.*;
  */
 public class CommandRegistrar {
 
-    private static final Logger logger = Loggers.getLogger(CommandRegistrar.class);
+    private static final Logger logger = LoggerFactory.getLogger(CommandRegistrar.class);
     private static final Map<String, AbstractCommand> commands = new HashMap<>();
     private static final Map<String, AbstractSlashCommand> slashCommands = new HashMap<>();
 
@@ -63,23 +65,21 @@ public class CommandRegistrar {
         logger.info("Command Handler initialized");
     }
 
-    public static Flux<ApplicationCommandData> registerSlashCommands(RestClient restClient, long devGuild) {
-        long appId = restClient.getApplicationId().block();
-        List<ApplicationCommandRequest> commandRequestList = new ArrayList<>();
+    public static void registerSlashCommands(JDA jda, long devGuild) {
+
+        CommandListUpdateAction slashCommandList = Objects.requireNonNull(jda.getGuildById(devGuild)).updateCommands();
 
         slashCommands.values().forEach(slashCommand -> {
             logger.debug("Building slash command: " + slashCommand.getName());
-            ApplicationCommandRequest request = ApplicationCommandRequest.builder()
-                .name(slashCommand.getName())
-                .description(slashCommand.getDescription())
-                .type(ApplicationCommandOption.Type.STRING.getValue())
-                .build();
-            commandRequestList.add(request);
+            SlashCommandData slashCommandData = Commands.slash(slashCommand.getName(), slashCommand.getDescription());
+
+            slashCommandData.addOptions(slashCommand.getSlashCommandParameters());
+
+            slashCommandList.addCommands(slashCommandData);
         });
 
-        return restClient.getApplicationService().bulkOverwriteGuildApplicationCommand(appId, devGuild, commandRequestList)
-            .doOnNext(slashCommand -> logger.debug("Successfully registered slash command: " + slashCommand.name()))
-            .doOnError(error -> logger.error("Failed to register slash command", error));
+        slashCommandList.queue();
+
 
     }
 

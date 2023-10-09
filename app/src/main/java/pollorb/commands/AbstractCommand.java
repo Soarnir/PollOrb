@@ -1,7 +1,7 @@
 package pollorb.commands;
 
-import discord4j.core.event.domain.message.MessageCreateEvent;
-import reactor.core.publisher.Mono;
+
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 import java.util.List;
 
@@ -14,7 +14,6 @@ import java.util.List;
  */
 public abstract class AbstractCommand {
     private String name;
-    private List<CommandParameters> parameters;
     private List<ContextualRequirements> requirements;
     private String response = "Baseline response to text command";
 
@@ -22,12 +21,10 @@ public abstract class AbstractCommand {
      * Baseline constructor without basic response
      *
      * @param name Command name
-     * @param parameters List of potential command parameters, optional or not
      * @param requirements Contextual requirements
      */
-    protected AbstractCommand(String name, List<CommandParameters> parameters, List<ContextualRequirements> requirements) {
+    protected AbstractCommand(String name, List<ContextualRequirements> requirements) {
         this.name = name;
-        this.parameters = parameters;
         this.requirements = requirements;
     }
 
@@ -35,35 +32,18 @@ public abstract class AbstractCommand {
      * Baseline constructor with basic response override
      *
      * @param name Command name
-     * @param parameters List of potential command parameters, optional or not
      * @param requirements Contextual requirements
      * @param response Basic text response
      */
-    protected AbstractCommand(String name, List<CommandParameters> parameters, List<ContextualRequirements> requirements, String response) {
+    protected AbstractCommand(String name, List<ContextualRequirements> requirements, String response) {
         this.name = name;
-        this.parameters = parameters;
         this.requirements = requirements;
         this.response = response;
     }
 
-    /**
-     * Provides baseline text response handle
-     *
-     * @param event Any message event
-     * @return response
-     */
-    public Mono<Void> handle(MessageCreateEvent event) {
-        return event.getMessage().getChannel().flatMap(channel -> channel.createMessage(response)).then();
-    }
-
     // Getters
-
     public String getName() {
         return name;
-    }
-
-    public List<CommandParameters> getParameters() {
-        return parameters;
     }
 
     public List<ContextualRequirements> getRequirements() {
@@ -75,12 +55,11 @@ public abstract class AbstractCommand {
         this.name = name;
     }
 
-    public void setParameters(List<CommandParameters> parameters) {
-        this.parameters = parameters;
-    }
-
     public void setRequirements(List<ContextualRequirements> requirements) {
         this.requirements = requirements;
     }
 
+    public void handle(MessageReceivedEvent event) {
+        event.getChannel().sendMessage(response).queue();
+    }
 }

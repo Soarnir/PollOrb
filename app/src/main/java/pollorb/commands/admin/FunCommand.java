@@ -1,20 +1,20 @@
 package pollorb.commands.admin;
 
-import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
+import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import pollorb.commands.AbstractSlashCommand;
-import pollorb.commands.CommandParameters;
 import pollorb.commands.ContextualRequirements;
-import reactor.core.publisher.Mono;
 
 import java.util.List;
 
+import static net.dv8tion.jda.api.interactions.commands.OptionType.STRING;
+
 public class FunCommand extends AbstractSlashCommand {
+
     public FunCommand() {
-        super("fun", List.of(CommandParameters.STRING), List.of(ContextualRequirements.ROLE));
+
+        super("fun", "very fun indeed", List.of(
+            new OptionData(STRING, "target", "pointer", true)
+        ), List.of(ContextualRequirements.ROLE));
     }
 
-    @Override
-    public Mono<Void> handle(ChatInputInteractionEvent event) {
-        return event.reply().withEphemeral(true).withContent("LASER");
-    }
 }

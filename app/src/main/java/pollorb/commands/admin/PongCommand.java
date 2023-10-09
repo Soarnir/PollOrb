@@ -1,7 +1,6 @@
 package pollorb.commands.admin;
 
 import pollorb.commands.AbstractCommand;
-import pollorb.commands.CommandParameters;
 import pollorb.commands.ContextualRequirements;
 
 import java.util.List;
@@ -15,6 +14,6 @@ import java.util.List;
 public class PongCommand extends AbstractCommand {
 
     public PongCommand() {
-        super("pong", List.of(CommandParameters.STRING), List.of(ContextualRequirements.ROLE), "ping!");
+        super("pong", List.of(ContextualRequirements.ROLE), "ping!");
     }
 }

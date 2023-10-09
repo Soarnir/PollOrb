@@ -1,6 +1,7 @@
 package pollorb.commands;
 
-import discord4j.core.object.entity.Role;
+
+import net.dv8tion.jda.api.entities.Role;
 
 /**
  * Enum representation of command requirements

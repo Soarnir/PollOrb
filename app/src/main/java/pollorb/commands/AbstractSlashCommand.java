@@ -1,24 +1,31 @@
 package pollorb.commands;
 
-import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
-import discord4j.core.event.domain.message.MessageCreateEvent;
-import reactor.core.publisher.Mono;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 
 import java.util.List;
 
 public abstract class AbstractSlashCommand extends AbstractCommand {
 
-    private final String description = "";
+    private String description = "";
+    private final List<OptionData> slashCommandParameters;
+    private String response = "Baseline response to slash command";
 
-    protected AbstractSlashCommand(String name, List<CommandParameters> parameters, List<ContextualRequirements> requirements) {
-        super(name, parameters, requirements);
-    }
-
-    public Mono<Void> handle(ChatInputInteractionEvent event) {
-        return event.reply().withEphemeral(true).withContent("Baseline response");
+    protected AbstractSlashCommand(String name, String description, List<OptionData> slashCommandParameters, List<ContextualRequirements> requirements) {
+        super(name, requirements);
+        this.description = description;
+        this.slashCommandParameters = slashCommandParameters;
     }
 
     public String getDescription() {
         return description;
+    }
+
+    public List<OptionData> getSlashCommandParameters() {
+        return slashCommandParameters;
+    }
+
+    public void handle(SlashCommandInteractionEvent event) {
+        event.reply(response).queue();
     }
 }
