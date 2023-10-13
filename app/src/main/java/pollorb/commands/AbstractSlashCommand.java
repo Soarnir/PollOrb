@@ -1,8 +1,10 @@
 package pollorb.commands;
 
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
+import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import org.slf4j.Logger;
@@ -87,7 +89,7 @@ public abstract class AbstractSlashCommand extends AbstractCommand {
     public void buildHelp() {
         StringBuilder stringBuilder = new StringBuilder();
         if (!slashCommandOptionList.isEmpty()) {
-            stringBuilder.append(name);
+            stringBuilder.append("/").append(name);
             slashCommandOptionList.forEach(optionData -> {
                 if (optionData.isRequired()) {
                     stringBuilder.append(" `<").append(optionData.getName()).append(">`");
@@ -109,7 +111,10 @@ public abstract class AbstractSlashCommand extends AbstractCommand {
                 }
             });
         } else {
-            stringBuilder.append(name);
+            stringBuilder.append("/").append(name);
+        }
+        if (examples != null) {
+            stringBuilder.append("\n**Examples**\n").append(examples);
         }
 
         this.helpMessageEmbed =
@@ -118,6 +123,20 @@ public abstract class AbstractSlashCommand extends AbstractCommand {
                 .addField("Description", (description + "\n" + helpMessage), false)
                 .setFooter("<required> | [optional]")
                 .build();
+    }
+
+    public void errorEmbed(SlashCommandInteractionEvent event, String errorResponse) {
+        MessageEmbed messageEmbed = new EmbedBuilder()
+            .addField("Error", errorResponse, false)
+            .build();
+        event.replyEmbeds(messageEmbed).queue();
+    }
+
+    public void errorEmbed(InteractionHook hook, String errorResponse) {
+        MessageEmbed messageEmbed = new EmbedBuilder()
+            .addField("Error", errorResponse, false)
+            .build();
+        hook.sendMessageEmbeds(messageEmbed).queue();
     }
 
     /**
