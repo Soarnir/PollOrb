@@ -14,7 +14,7 @@ import java.util.List;
 public class TestCommand extends AbstractCommand {
 
     public TestCommand() {
-        super("test", List.of(ContextualRequirements.ROLE));
+        super("test", "test", List.of(ContextualRequirements.ROLE));
     }
 
 }
