@@ -2,6 +2,7 @@ package pollorb.commands.listeners;
 
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
@@ -39,6 +40,8 @@ public class CommandListener extends ListenerAdapter {
 
     /**
      * Handles message commands
+     * Designed to stop processing in multiple steps in order to avoid attempting command invocation
+     * if message provided in event is a simple message.
      *
      * @param event message command event
      */
@@ -46,21 +49,28 @@ public class CommandListener extends ListenerAdapter {
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
         if (event.isFromGuild()) {
             Message message = event.getMessage();
-            if (message.getContentDisplay().startsWith(prefix)) {
-                logger.debug("Entering matching");
-                Pattern commandPattern = Pattern.compile(prefix + "(\\w+)");
-                logger.debug("Pattern: " + commandPattern.pattern());
-                String command = message.getContentDisplay();
-                logger.debug("matching against: " + command);
-                Matcher commandMatcher = commandPattern.matcher(command);
-                if (commandMatcher.find()) {
-                    logger.debug("found something");
-                    commandMap.get(commandMatcher.group(1)).handle(event);
+            String messageText = message.getContentDisplay();
+            if (messageText.startsWith(prefix)) {
+                // Check if valid command format
+                if (commandCheck(messageText)) {
+
                 } else {
-                    logger.debug("found nothing");
+                    message.getChannel().sendMessage("Not a valid command format").queue();
                 }
+
+                // Check permissions
+
             }
         }
+    }
+
+    public boolean commandCheck(String command) {
+        logger.debug("Entering matching");
+        Pattern commandPattern = Pattern.compile(prefix + "(\\w+)");
+        logger.debug("Pattern: " + commandPattern.pattern());
+        logger.debug("matching against: " + command);
+        Matcher commandMatcher = commandPattern.matcher(command);
+        return commandMatcher.find();
     }
 
     /**
@@ -70,10 +80,26 @@ public class CommandListener extends ListenerAdapter {
      */
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
-        logger.debug("received slash event");
+        logger.debug("Received slash event");
         if (event.isFromGuild()) {
             logger.debug("sending event to command handle");
-            slashCommandMap.get(event.getName()).handle(event);
+            slashCommandMap.get(event.getName()).handleSlashCommand(event);
+        }
+    }
+
+    /**
+     * Handle button interaction events
+     * IMPORTANT NAMING CONVENTIONS
+     * Each button id must be <command name>.<button id>
+     *
+     * @param event Button interaction event
+     */
+    @Override
+    public void onButtonInteraction(@NotNull ButtonInteractionEvent event) {
+        logger.debug("Received button event");
+        if (event.isFromGuild()) {
+            logger.debug("Sending button event to responsible handler");
+            slashCommandMap.get(event.getComponentId().split("\\.")[0]).handleButtonInteraction(event);
         }
     }
 
@@ -83,5 +109,4 @@ public class CommandListener extends ListenerAdapter {
     public static void init() {
         logger.info("Command Listener initialized");
     }
-
 }

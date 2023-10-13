@@ -52,6 +52,15 @@ public class Launcher {
             GatewayIntent.GUILD_MESSAGE_REACTIONS
         );
 
+        try {
+//            logger.debug("command test");
+//            PollCommand command = new PollCommand();
+//            logger.debug(command.toString());
+        } catch (Exception e) {
+            logger.debug(e.getMessage());
+        }
+
+
         // Create JDA object and register listeners
         logger.info("Initializing connection");
         try {
