@@ -2,8 +2,6 @@ plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
     application
     java
-    id("org.springframework.boot") version "3.1.4"
-    id("io.spring.dependency-management") version "1.1.3"
 }
 
 group = "com.github.soarnir"
@@ -14,10 +12,14 @@ repositories {
     mavenCentral()
 }
 
+tasks.test {
+    useJUnitPlatform()
+}
+
 dependencies {
     // Tests
     // Use JUnit test framework.
-    testImplementation("junit:junit:4.13.2")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.10.0")
 
     // --------------
     // Implementation
@@ -43,8 +45,8 @@ dependencies {
     // --------------
 
     // PostgreSQL
-    runtimeOnly("com.h2database:h2")
-    runtimeOnly("org.postgresql:postgresql")
+    runtimeOnly("com.h2database:h2:2.2.224")
+    runtimeOnly("org.postgresql:postgresql:42.6.0")
 }
 
 // Apply a specific Java toolchain to ease working on different environments.
