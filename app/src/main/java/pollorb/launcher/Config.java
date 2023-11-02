@@ -8,7 +8,12 @@ package pollorb.launcher;
  */
 public class Config {
     protected String token = "text";
-    protected long dev_guild;
+    protected String dev_guild;
+    protected String database_url;
+    protected String database_username;
+    protected String database_password;
+
+
     Config() {
 
     }
