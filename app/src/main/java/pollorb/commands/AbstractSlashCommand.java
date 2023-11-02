@@ -10,6 +10,7 @@ import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -86,8 +87,13 @@ public abstract class AbstractSlashCommand extends AbstractCommand {
         return nsfw;
     }
 
+    /**
+     * Build the help embeds for all slash commands
+     */
     public void buildHelp() {
         StringBuilder stringBuilder = new StringBuilder();
+        // Does the slash command contain options, subcommands, or neither?
+        // Each option requires a different structure for help clarity
         if (!slashCommandOptionList.isEmpty()) {
             stringBuilder.append("/").append(name);
             slashCommandOptionList.forEach(optionData -> {
@@ -122,19 +128,23 @@ public abstract class AbstractSlashCommand extends AbstractCommand {
                 .addField("Command usage", stringBuilder.toString(), false)
                 .addField("Description", (description + "\n" + helpMessage), false)
                 .setFooter("<required> | [optional]")
+                .setColor(new Color(79, 165, 22))
+                .setTitle(name)
                 .build();
     }
 
     public void errorEmbed(SlashCommandInteractionEvent event, String errorResponse) {
         MessageEmbed messageEmbed = new EmbedBuilder()
             .addField("Error", errorResponse, false)
+            .setColor(new Color(140, 0, 0))
             .build();
-        event.replyEmbeds(messageEmbed).queue();
+        event.replyEmbeds(messageEmbed).setEphemeral(true).queue();
     }
 
     public void errorEmbed(InteractionHook hook, String errorResponse) {
         MessageEmbed messageEmbed = new EmbedBuilder()
             .addField("Error", errorResponse, false)
+            .setColor(new Color(140, 0, 0))
             .build();
         hook.sendMessageEmbeds(messageEmbed).queue();
     }

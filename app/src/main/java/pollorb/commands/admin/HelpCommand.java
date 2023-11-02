@@ -46,15 +46,15 @@ public class HelpCommand extends AbstractSlashCommand {
                 if (command != null) {
                     event.replyEmbeds(command.getHelpMessageEmbed()).queue();
                 } else {
-                    event.reply("Could not find a command with that name").queue();
+                    errorEmbed(event, "Could not find a command with that name");
                 }
                 return;
             case "module":
                 input = Objects.requireNonNull(event.getOption("name")).getAsString();
-                event.reply("modules aren't a thing yet!").queue();
+                errorEmbed(event, "modules aren't a thing yet!");
                 return;
             case "general":
-                event.reply("general help isn't a thing yet!").queue();
+                errorEmbed(event, "general help isn't a thing yet!");
                 return;
             default:
 

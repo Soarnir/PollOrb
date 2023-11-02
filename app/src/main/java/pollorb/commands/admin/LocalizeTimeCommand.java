@@ -68,7 +68,7 @@ public class LocalizeTimeCommand extends AbstractSlashCommand {
             LocalDate inputDate;
             // Try to match user input, if any match is found then begin parsing
             if (dateTimeMatcher.find()) {
-                //
+                // We always expect at least a full date, any less, and we send an error response
                 if (dateTimeMatcher.group(1) != null) {
                     String[] dateArray = dateTimeMatcher.group(1).split("-");
                     inputDate = LocalDate.of(
@@ -122,8 +122,10 @@ public class LocalizeTimeCommand extends AbstractSlashCommand {
 
             String response = "<t:" + inputDateTime.toEpochSecond() + ">";
 
-            if (Objects.requireNonNull(event.getOption("raw")).getAsBoolean()) {
-                response = "\\<t:" + inputDateTime.toEpochSecond() + ">";
+            if (event.getOption("raw") != null) {
+                if (Objects.requireNonNull(event.getOption("raw")).getAsBoolean()) {
+                    response = "\\<t:" + inputDateTime.toEpochSecond() + ">";
+                }
             }
 
             event.getHook().sendMessage(response).queue();

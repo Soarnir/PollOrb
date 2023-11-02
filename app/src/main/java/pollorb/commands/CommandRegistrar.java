@@ -85,7 +85,7 @@ public class CommandRegistrar {
     /**
      * Initialize the command handler
      */
-    public static void init() {
+    public static void initialize() {
         logger.info("Command Handler initialized");
     }
 
@@ -97,7 +97,7 @@ public class CommandRegistrar {
      * @param jda Discord object
      * @param devGuild long dev guild id
      */
-    public static void registerSlashCommands(JDA jda, long devGuild) {
+    public static void registerSlashCommands(JDA jda, String devGuild) {
 
         CommandListUpdateAction slashCommandList = Objects.requireNonNull(jda.getGuildById(devGuild)).updateCommands();
 

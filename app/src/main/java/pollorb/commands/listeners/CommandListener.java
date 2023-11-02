@@ -84,6 +84,8 @@ public class CommandListener extends ListenerAdapter {
         if (event.isFromGuild()) {
             logger.debug("sending event to command handle");
             slashCommandMap.get(event.getName()).handleSlashCommand(event);
+        } else {
+            event.reply("Only server commands for now.").queue();
         }
     }
 
@@ -106,7 +108,7 @@ public class CommandListener extends ListenerAdapter {
     /**
      * Initializes this class
      */
-    public static void init() {
+    public static void initialize() {
         logger.info("Command Listener initialized");
     }
 }

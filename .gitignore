@@ -7,3 +7,5 @@ build
 ignored/
 
 logs/
+
+app/src/main/resources/application.properties
