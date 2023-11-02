@@ -6,8 +6,6 @@ import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
 import pollorb.commands.CommandRegistrar;
 import pollorb.commands.listeners.CommandListener;
 
@@ -22,13 +20,11 @@ import java.util.EnumSet;
  * @author Soarnir
  * @since 0.1.0
  */
-@SpringBootApplication
 public class Launcher {
 
     private static final Logger logger = LoggerFactory.getLogger(Launcher.class);
 
     public static void main(String[] args) {
-        SpringApplication.run(Launcher.class, args);
         // Initialize config with GSON
         Config config;
         Gson gson = new Gson();

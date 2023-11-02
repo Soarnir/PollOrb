@@ -19,12 +19,9 @@ dependencies {
     // Use JUnit test framework.
     testImplementation("junit:junit:4.13.2")
 
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
-
-
+    // --------------
     // Implementation
-    // Spring Boot JDBC
-    implementation("org.springframework.boot:spring-boot-starter-jdbc")
+    // --------------
 
     // This dependency is used by the application.
     implementation("com.google.guava:guava:31.1-jre")
@@ -40,6 +37,10 @@ dependencies {
 
     // Reflections
     implementation("org.reflections:reflections:0.10.2")
+
+    // -----------
+    // RuntimeOnly
+    // --------------
 
     // PostgreSQL
     runtimeOnly("com.h2database:h2")
