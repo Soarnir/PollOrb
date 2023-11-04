@@ -29,3 +29,6 @@ jobs:
       with:
         gradle-version: current
         arguments: build
+
+    - name: Run tests
+      run: ./gradlew test
