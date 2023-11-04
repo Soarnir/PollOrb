@@ -1,5 +1,6 @@
 package pollorb.commands.listeners;
 
+import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
@@ -50,27 +51,29 @@ public class CommandListener extends ListenerAdapter {
         if (event.isFromGuild()) {
             Message message = event.getMessage();
             String messageText = message.getContentDisplay();
+            // Check if message contains prefix
             if (messageText.startsWith(prefix)) {
-                // Check if valid command format
-                if (commandCheck(messageText)) {
-
-                } else {
-                    message.getChannel().sendMessage("Not a valid command format").queue();
+                try {
+                    // Check if valid command format, if so store name
+                    String commandName = commandNameExtract(messageText);
+                    // Check if command exists
+                    if (commandMap.get(commandName) != null) {
+                        AbstractCommand command = commandMap.get(commandName);
+                        // Check if user permissions level matches command level
+                        if (checkCommandLevel(command, event)) {
+                            // Handle command
+                            command.handle(event);
+                        } else {
+                            AbstractCommand.errorEmbed(event, command.getCommandLevel().getError());
+                        }
+                    } else {
+                        AbstractCommand.errorEmbed(event, "No command found with that name");
+                    }
+                } catch (IllegalStateException r) {
+                    AbstractCommand.errorEmbed(event, "No command found with that name");
                 }
-
-                // Check permissions
-
             }
         }
-    }
-
-    public boolean commandCheck(String command) {
-        logger.debug("Entering matching");
-        Pattern commandPattern = Pattern.compile(prefix + "(\\w+)");
-        logger.debug("Pattern: " + commandPattern.pattern());
-        logger.debug("matching against: " + command);
-        Matcher commandMatcher = commandPattern.matcher(command);
-        return commandMatcher.find();
     }
 
     /**
@@ -81,12 +84,72 @@ public class CommandListener extends ListenerAdapter {
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
         logger.debug("Received slash event");
+        // Check if command origin is in a guild
         if (event.isFromGuild()) {
             logger.debug("sending event to command handle");
-            slashCommandMap.get(event.getName()).handleSlashCommand(event);
+            AbstractSlashCommand slashCommand = slashCommandMap.get(event.getName());
+            // Check if user permissions level matches command level
+            if (checkCommandLevel(slashCommand, event)) {
+                // Handle command
+                slashCommand.handleSlashCommand(event);
+            } else {
+                AbstractSlashCommand.errorEmbed(event, slashCommand.getCommandLevel().getError());
+            }
         } else {
-            event.reply("Only server commands for now.").queue();
+            AbstractSlashCommand.errorEmbed(event,"Only server commands for now.");
         }
+    }
+
+    /**
+     * For text commands, extract command name from prefixed text
+     *
+     * @param command text containing command
+     * @return String matching only command name
+     */
+    public String commandNameExtract(String command) {
+        String commandName = "";
+        logger.debug("Entering matching");
+        Pattern commandPattern = Pattern.compile((prefix + "(\\w+)"), Pattern.CASE_INSENSITIVE);
+        logger.debug("Pattern: " + commandPattern.pattern());
+        logger.debug("matching against: " + command);
+        Matcher commandMatcher = commandPattern.matcher(command);
+        if (commandMatcher.find()) {
+            commandName = commandMatcher.group(1);
+        }
+        logger.debug("Command: " + commandName);
+        return commandName;
+    }
+
+    /**
+     * Check if the invoker matches the appropriate permissions for the command.
+     *
+     * @param slashCommand command used
+     * @param event slash command event
+     * @return whether permissions match or not
+     */
+    public boolean checkCommandLevel(AbstractSlashCommand slashCommand, SlashCommandInteractionEvent event) {
+        return switch (slashCommand.getCommandLevel()) {
+            case SYSTEM -> event.getUser().getName().equalsIgnoreCase("pollorb");
+            case DEVELOPMENT -> event.getUser().getName().equalsIgnoreCase("soarnir");
+            case ADMINISTRATIVE -> event.getMember().hasPermission(Permission.ADMINISTRATOR);
+            case EVERYONE -> true;
+        };
+    }
+
+    /**
+     * Check if the invoker matches the appropriate permissions for the command.
+     *
+     * @param command command used
+     * @param event message received event
+     * @return whether permissions match or not
+     */
+    public boolean checkCommandLevel(AbstractCommand command, MessageReceivedEvent event) {
+        return switch (command.getCommandLevel()) {
+            case SYSTEM -> event.getAuthor().getName().equalsIgnoreCase("pollorb");
+            case DEVELOPMENT -> event.getAuthor().getName().equalsIgnoreCase("soarnir");
+            case ADMINISTRATIVE -> event.getMember().hasPermission(Permission.ADMINISTRATOR);
+            case EVERYONE -> true;
+        };
     }
 
     /**

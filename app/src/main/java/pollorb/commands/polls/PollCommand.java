@@ -8,6 +8,7 @@ import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pollorb.commands.AbstractSlashCommand;
+import pollorb.commands.CommandLevel;
 import pollorb.commands.ContextualRequirements;
 
 import java.util.List;
@@ -18,7 +19,7 @@ public class PollCommand extends AbstractSlashCommand {
     private static final Logger logger = LoggerFactory.getLogger(PollCommand.class);
 
     public PollCommand() {
-        super("poll", "polls polls polls", List.of(ContextualRequirements.ROLE));
+        super("poll", "polls polls polls", CommandLevel.EVERYONE, List.of(ContextualRequirements.ROLE));
 
         List<SubcommandData> subcommandDataList = List.of(
             new SubcommandData("save", "Save a created poll to reuse later")

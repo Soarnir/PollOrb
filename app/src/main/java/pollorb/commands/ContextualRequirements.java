@@ -1,7 +1,12 @@
 package pollorb.commands;
 
 
+import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.entities.User;
+
+import java.nio.channels.Channel;
 
 /**
  * Enum representation of command requirements
@@ -10,23 +15,20 @@ import net.dv8tion.jda.api.entities.Role;
  * @since 0.1.0
  */
 public enum ContextualRequirements {
-    USER(),
+    USER(User.class),
     ROLE(Role.class),
-    PERMISSIONS(),
-    CHANNEL(),
-    COMMANDLEVEL();
+    PERMISSIONS(Permission.class),
+    CHANNEL(Channel.class),
+    GUILD(Guild.class),
+    COMMANDLEVEL(CommandLevel.class);
     
-    private final Role role;
-    
-    
+    private final Class<?> clazz;
 
-    ContextualRequirements(Class<Role> roleClass) {
-
-        role = null;
+    ContextualRequirements(Class<?> clazz) {
+        this.clazz = clazz;
     }
 
-    ContextualRequirements() {
-
-        role = null;
+    public Class<?> getClazz() {
+        return this.clazz;
     }
 }

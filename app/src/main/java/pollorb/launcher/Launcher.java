@@ -35,6 +35,8 @@ public class Launcher {
         try {
             logger.info("Reading config");
             File file = Path.of("ignored/config.json").toFile();
+
+            // These readers allow gson to read pretty formatted json
             FileReader reader = new FileReader(file);
             JsonReader jsonReader = new JsonReader(reader);
             jsonReader.setLenient(true);
@@ -44,7 +46,7 @@ public class Launcher {
             throw new RuntimeException(e);
         }
 
-        // Begin bot initializing
+        // Begin bot initialization
         // Be wary of order
         logger.info("Initializing Bot");
         CommandRegistrar.initialize();
@@ -66,9 +68,6 @@ public class Launcher {
         );
 
         try {
-//            logger.debug("command test");
-//            PollCommand command = new PollCommand();
-//            logger.debug(command.toString());
             logger.info("testing db");
             DatabaseManager.testConnection();
         } catch (Exception e) {

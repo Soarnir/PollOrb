@@ -6,10 +6,7 @@ import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pollorb.commands.AbstractCommand;
-import pollorb.commands.AbstractSlashCommand;
-import pollorb.commands.CommandRegistrar;
-import pollorb.commands.ContextualRequirements;
+import pollorb.commands.*;
 
 import java.util.List;
 import java.util.Objects;
@@ -19,7 +16,7 @@ public class HelpCommand extends AbstractSlashCommand {
     private static final Logger logger = LoggerFactory.getLogger(HelpCommand.class);
 
     public HelpCommand() {
-        super("help", "Get help on parts of the bot", List.of(ContextualRequirements.ROLE));
+        super("help", "Get help on parts of the bot", CommandLevel.EVERYONE, List.of(ContextualRequirements.ROLE));
         List<SubcommandData> subcommandDataList = List.of(
             new SubcommandData("command", "get help with a command")
                 .addOption(OptionType.STRING, "name", "command name", true),
@@ -38,10 +35,11 @@ public class HelpCommand extends AbstractSlashCommand {
 
     @Override
     public void handleSlashCommand(SlashCommandInteractionEvent event) {
-        String input = "";
+        String input;
         switch (Objects.requireNonNull(event.getSubcommandName())) {
             case "command":
                 input = Objects.requireNonNull(event.getOption("name")).getAsString();
+                logger.debug(input);
                 AbstractCommand command = CommandRegistrar.getFullCommandMap().get(input);
                 if (command != null) {
                     event.replyEmbeds(command.getHelpMessageEmbed()).queue();

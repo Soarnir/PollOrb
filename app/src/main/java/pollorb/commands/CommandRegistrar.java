@@ -40,9 +40,15 @@ public class CommandRegistrar {
         // Try to create both types of commands for exception handling
         try {
             AbstractCommand command = new LaserCommand();
+        } catch (Exception e) {
+            logger.error("Failed to create a text command");
+            logger.error(e.getMessage());
+        }
+
+        try {
             AbstractSlashCommand pollCommand = new PollCommand();
         } catch (Exception e) {
-            logger.error("Failed to create a command");
+            logger.error("Failed to create a slash command");
             logger.error(e.getMessage());
         }
 
@@ -70,11 +76,12 @@ public class CommandRegistrar {
             if (command != null) {
                 if (command instanceof AbstractSlashCommand) {
                     logger.info("Slash command: " + command.getName() + " added to slash command list");
-                    ((AbstractSlashCommand) command).buildHelp();
+                    command.buildHelp();
                     slashCommands.put(command.getName(), (AbstractSlashCommand) command);
                     fullCommandMap.put(command.getName(), command);
                 } else {
                     logger.info("Text command: " + command.getName() + " added to command list");
+                    command.buildHelp();
                     commands.put(command.getName(), command);
                     fullCommandMap.put(command.getName(), command);
                 }
@@ -115,6 +122,8 @@ public class CommandRegistrar {
 
             slashCommandList.addCommands(slashCommandData);
         });
+
+        logger.info("Built: " + slashCommandList);
 
         slashCommandList.queue();
     }

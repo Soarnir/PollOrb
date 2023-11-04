@@ -6,6 +6,7 @@ import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import pollorb.commands.AbstractSlashCommand;
+import pollorb.commands.CommandLevel;
 import pollorb.commands.ContextualRequirements;
 
 import java.util.List;
@@ -13,7 +14,7 @@ import java.util.List;
 public class FunCommand extends AbstractSlashCommand {
 
     public FunCommand() {
-        super("fun", "very fun indeed", List.of(ContextualRequirements.ROLE));
+        super("fun", "very fun indeed", CommandLevel.EVERYONE, List.of(ContextualRequirements.ROLE));
         List<OptionData> optionDataSet = List.of(
             new OptionData(OptionType.USER, "user", "the user to mention", true),
             new OptionData(OptionType.STRING, "text", "what to say to them", true)

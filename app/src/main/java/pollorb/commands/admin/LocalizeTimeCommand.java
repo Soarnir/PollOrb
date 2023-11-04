@@ -7,6 +7,7 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pollorb.commands.AbstractSlashCommand;
+import pollorb.commands.CommandLevel;
 import pollorb.commands.ContextualRequirements;
 
 import java.time.*;
@@ -22,7 +23,7 @@ public class LocalizeTimeCommand extends AbstractSlashCommand {
     private final String formatError = "Please follow the format: `YYYY-MM-DDThh:mm:ss` \nThis is the baseline but you do not need to enter any time values, just to the accuracy you need.";
 
     public LocalizeTimeCommand() {
-        super("localize", "Create automatically localized dates and times, defaults to UTC", List.of(ContextualRequirements.ROLE));
+        super("localize", "Create automatically localized dates and times, defaults to UTC", CommandLevel.EVERYONE, List.of(ContextualRequirements.ROLE));
         List<OptionData> optionDataSet = List.of(
             new OptionData(OptionType.STRING, "datetime", "ISO8601 formatted time, for example:\n2023-01-01T20:20:20Z", true),
             new OptionData(OptionType.STRING, "timezone", "what your timezone is, defaults to UTC", false),

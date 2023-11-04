@@ -7,6 +7,7 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.*;
 import java.util.List;
 
 /**
@@ -22,7 +23,8 @@ public abstract class AbstractCommand {
     // Declare package-private variables
     protected String name;
     protected String description;
-    protected List<ContextualRequirements> requirements;
+    protected List<ContextualRequirements> contextualRequirements;
+    protected CommandLevel commandLevel;
     protected String response = "Baseline response to text command";
     protected MessageEmbed helpMessageEmbed;
 
@@ -34,16 +36,11 @@ public abstract class AbstractCommand {
      * @param name Command name
      * @param requirements Contextual requirements
      */
-    protected AbstractCommand(String name, String description, List<ContextualRequirements> requirements) {
+    protected AbstractCommand(String name, String description, CommandLevel commandLevel, List<ContextualRequirements> requirements) {
         this.name = name;
         this.description = description;
-        this.requirements = requirements;
-        this.helpMessageEmbed =
-            new EmbedBuilder()
-                .addField("Command", name, false)
-                .addField("Description", description, false)
-                .addField("Examples", examples,false)
-                .build();
+        this.commandLevel = commandLevel;
+        this.contextualRequirements = requirements;
     }
 
     /**
@@ -53,9 +50,11 @@ public abstract class AbstractCommand {
      * @param requirements Contextual requirements
      * @param response Basic text response
      */
-    protected AbstractCommand(String name, List<ContextualRequirements> requirements, String response) {
+    protected AbstractCommand(String name, String description, CommandLevel commandLevel, List<ContextualRequirements> requirements, String response) {
         this.name = name;
-        this.requirements = requirements;
+        this.description = description;
+        this.commandLevel = commandLevel;
+        this.contextualRequirements = requirements;
         this.response = response;
     }
 
@@ -65,11 +64,15 @@ public abstract class AbstractCommand {
     }
 
     public List<ContextualRequirements> getRequirements() {
-        return requirements;
+        return contextualRequirements;
     }
 
     public MessageEmbed getHelpMessageEmbed() {
         return helpMessageEmbed;
+    }
+
+    public CommandLevel getCommandLevel() {
+        return commandLevel;
     }
 
     // Setters
@@ -78,7 +81,27 @@ public abstract class AbstractCommand {
     }
 
     public void setRequirements(List<ContextualRequirements> requirements) {
-        this.requirements = requirements;
+        this.contextualRequirements = requirements;
+    }
+
+    public void buildHelp() {
+        this.helpMessageEmbed =
+            new EmbedBuilder()
+                .addField("Command usage", "!" + name, false)
+                .addField("Description", description, false)
+                .addField("Examples", examples,false)
+                .setFooter("<required> | [optional]")
+                .setColor(new Color(79, 165, 22))
+                .setTitle(name)
+                .build();
+    }
+
+    public static void errorEmbed(MessageReceivedEvent event, String errorResponse) {
+        MessageEmbed messageEmbed = new EmbedBuilder()
+            .addField("Error", errorResponse, false)
+            .setColor(new Color(140, 0, 0))
+            .build();
+        event.getChannel().sendMessageEmbeds(messageEmbed).queue();
     }
 
     public void setHelpMessageEmbed(MessageEmbed helpMessageEmbed) {

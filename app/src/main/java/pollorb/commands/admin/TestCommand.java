@@ -1,6 +1,7 @@
 package pollorb.commands.admin;
 
 import pollorb.commands.AbstractCommand;
+import pollorb.commands.CommandLevel;
 import pollorb.commands.ContextualRequirements;
 
 import java.util.List;
@@ -14,7 +15,7 @@ import java.util.List;
 public class TestCommand extends AbstractCommand {
 
     public TestCommand() {
-        super("test", "test", List.of(ContextualRequirements.ROLE));
+        super("test", "test", CommandLevel.DEVELOPMENT, List.of(ContextualRequirements.ROLE));
     }
 
 }

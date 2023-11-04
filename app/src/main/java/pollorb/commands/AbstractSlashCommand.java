@@ -52,8 +52,8 @@ public abstract class AbstractSlashCommand extends AbstractCommand {
      * @param description description
      * @param requirements List of contextual requirements
      */
-    protected AbstractSlashCommand(String name, String description, List<ContextualRequirements> requirements) {
-        super(name, description, requirements);
+    protected AbstractSlashCommand(String name, String description, CommandLevel commandLevel, List<ContextualRequirements> requirements) {
+        super(name, description, commandLevel, requirements);
     }
 
     /**
@@ -65,8 +65,8 @@ public abstract class AbstractSlashCommand extends AbstractCommand {
      * @param slashCommandOptionList List of slash command options
      * @param requirements List of contextual requirements
      */
-    protected AbstractSlashCommand(String name, String description, String response, List<OptionData> slashCommandOptionList, List<ContextualRequirements> requirements) {
-        super(name, description, requirements);
+    protected AbstractSlashCommand(String name, String description, String response, CommandLevel commandLevel, List<OptionData> slashCommandOptionList, List<ContextualRequirements> requirements) {
+        super(name, description, commandLevel, requirements);
         this.response = response;
         this.slashCommandOptionList = slashCommandOptionList;
     }
@@ -133,7 +133,7 @@ public abstract class AbstractSlashCommand extends AbstractCommand {
                 .build();
     }
 
-    public void errorEmbed(SlashCommandInteractionEvent event, String errorResponse) {
+    public static void errorEmbed(SlashCommandInteractionEvent event, String errorResponse) {
         MessageEmbed messageEmbed = new EmbedBuilder()
             .addField("Error", errorResponse, false)
             .setColor(new Color(140, 0, 0))
