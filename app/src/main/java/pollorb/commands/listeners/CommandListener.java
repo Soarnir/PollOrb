@@ -1,5 +1,7 @@
 package pollorb.commands.listeners;
 
+import pollorb.database.Tables;
+import pollorb.database.tables.CommandStats;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -7,16 +9,25 @@ import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
+import org.jooq.DSLContext;
+import org.jooq.SQLDialect;
+import org.jooq.conf.ParamType;
+import org.jooq.impl.DefaultDSLContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pollorb.commands.AbstractCommand;
 import pollorb.commands.AbstractSlashCommand;
 import pollorb.commands.CommandRegistrar;
+import pollorb.database.DatabaseManager;
 
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static org.jooq.impl.DSL.field;
 
 /**
  * Static class responsible for deferring listening events to
@@ -62,6 +73,7 @@ public class CommandListener extends ListenerAdapter {
                         // Check if user permissions level matches command level
                         if (checkCommandLevel(command, event)) {
                             // Handle command
+                            updateCommandStats(command.getName(), event.getGuild().getIdLong());
                             command.handle(event);
                         } else {
                             AbstractCommand.errorEmbed(event, command.getCommandLevel().getError());
@@ -91,6 +103,7 @@ public class CommandListener extends ListenerAdapter {
             // Check if user permissions level matches command level
             if (checkCommandLevel(slashCommand, event)) {
                 // Handle command
+                updateCommandStats(slashCommand.getName(), event.getGuild().getIdLong());
                 slashCommand.handleSlashCommand(event);
             } else {
                 AbstractSlashCommand.errorEmbed(event, slashCommand.getCommandLevel().getError());
@@ -150,6 +163,41 @@ public class CommandListener extends ListenerAdapter {
             case ADMINISTRATIVE -> event.getMember().hasPermission(Permission.ADMINISTRATOR);
             case EVERYONE -> true;
         };
+    }
+
+    public void updateCommandStats(String commandName, long guildID) {
+        DSLContext dslContext = new DefaultDSLContext(SQLDialect.POSTGRES);
+        String selectSql = dslContext.select(field(CommandStats.COMMAND_STATS.COMMAND_NAME), field(CommandStats.COMMAND_STATS.EXECUTIONS))
+            .from(Tables.COMMAND_STATS)
+            .where(field(CommandStats.COMMAND_STATS.COMMAND_NAME).eq(commandName))
+            .getSQL(ParamType.INLINED);
+
+        String insertSql = dslContext.insertInto(Tables.COMMAND_STATS, field(CommandStats.COMMAND_STATS.COMMAND_NAME), field(CommandStats.COMMAND_STATS.EXECUTIONS), field(CommandStats.COMMAND_STATS.LAST_EXECUTED_GUILD), field(CommandStats.COMMAND_STATS.LAST_EXECUTED_TIME))
+            .values(commandName, 1, guildID, ZonedDateTime.now().toOffsetDateTime())
+            .getSQL(ParamType.INLINED);
+
+        logger.info("Querying db");
+        DatabaseManager.select(selectSql, resultSet -> {
+            if (resultSet.next()) {
+                int executions = resultSet.getInt(2);
+                // Record found, increment
+                logger.info("Record found for command, updating");
+                logger.info("Executions: " + executions);
+                executions++;
+                String updateSql = dslContext.update(Tables.COMMAND_STATS)
+                    .set(CommandStats.COMMAND_STATS.EXECUTIONS, executions)
+                    .set(CommandStats.COMMAND_STATS.LAST_EXECUTED_TIME, ZonedDateTime.now(ZoneId.of("UTC")).toOffsetDateTime())
+                    .set(CommandStats.COMMAND_STATS.LAST_EXECUTED_GUILD, guildID)
+                    .where(field(CommandStats.COMMAND_STATS.COMMAND_NAME).eq(commandName))
+                    .getSQL(ParamType.INLINED);
+                DatabaseManager.query(updateSql);
+            } else {
+                logger.info("No record found in db, inserting");
+                // No record found, insert new
+                DatabaseManager.query(insertSql);
+            }
+            return null;
+        });
     }
 
     /**

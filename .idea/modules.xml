@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/PollOrb.iml" filepath="$PROJECT_DIR$/.idea/PollOrb.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/PollOrb.app.main.iml" filepath="$PROJECT_DIR$/.idea/modules/app/PollOrb.app.main.iml" />
     </modules>
   </component>
 </project>

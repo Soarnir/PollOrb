@@ -1,7 +1,13 @@
+import nu.studer.gradle.jooq.JooqEdition
+import org.jooq.meta.jaxb.Logging
+import org.jooq.meta.jaxb.Property
+import org.jooq.meta.jaxb.ForcedType
+
 plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
     application
     java
+    id("nu.studer.jooq") version "8.2"
 }
 
 group = "com.github.soarnir"
@@ -16,6 +22,59 @@ tasks.test {
     useJUnitPlatform()
 }
 
+jooq {
+    version.set("3.18.4")
+    edition.set(JooqEdition.OSS)
+
+    configurations {
+        create("main") {
+            jooqConfiguration.apply {
+                logging = Logging.WARN
+                jdbc.apply {
+                    driver = "org.postgresql.Driver"
+                    url = "jdbc:postgresql://localhost:5432/bot-dev"
+                    user = "bot"
+                    password = "M57\"pKL*es>77\$7"
+                    properties.add(Property().apply {
+                        key = "ssl"
+                        value = "false"
+                    })
+                }
+                generator.apply {
+                    name = "org.jooq.codegen.DefaultGenerator"
+                    database.apply {
+                        name = "org.jooq.meta.postgres.PostgresDatabase"
+                        inputSchema = "public"
+                        forcedTypes.addAll(listOf(
+                                /*ForcedType().apply {
+                                    name = "varchar"
+                                    includeExpression = ".*"
+                                    includeTypes = "JSONB?"
+                                },
+                                ForcedType().apply {
+                                    name = "varchar"
+                                    includeExpression = ".*"
+                                    includeTypes = "INET"
+                                }*/
+                        ))
+                    }
+                    generate.apply {
+                        isDeprecated = false
+                        isRecords = true
+                        isImmutablePojos = true
+                        isFluentSetters = true
+                    }
+                    target.apply {
+                        packageName = "pollorb.database"
+                        directory = "src/generated"
+                    }
+                    strategy.name = "org.jooq.codegen.DefaultGeneratorStrategy"
+                }
+            }
+        }
+    }
+}
+
 dependencies {
     // Tests
     // Use JUnit test framework.
@@ -26,7 +85,16 @@ dependencies {
     // Implementation
     // --------------
 
-    // This dependency is used by the application.
+    // DBUtils
+    implementation("commons-dbutils:commons-dbutils:1.8.1")
+
+    // JOOQ
+    implementation("org.jooq:jooq:3.18.7")
+
+    // Persistence
+    implementation("javax.persistence:javax.persistence-api:2.2")
+
+    // Guava
     implementation("com.google.guava:guava:31.1-jre")
 
     // Gson
@@ -42,8 +110,14 @@ dependencies {
     implementation("org.reflections:reflections:0.10.2")
 
     // -----------
+    // JOOQ
+    // -----------
+
+    jooqGenerator("org.postgresql:postgresql:42.6.0")
+
+    // -----------
     // RuntimeOnly
-    // --------------
+    // -----------
 
     // PostgreSQL
     runtimeOnly("com.h2database:h2:2.2.224")

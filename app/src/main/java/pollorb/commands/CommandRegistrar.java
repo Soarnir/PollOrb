@@ -70,6 +70,7 @@ public class CommandRegistrar {
                 logger.error("Illegal Argument: " + e.getMessage());
             } catch (InvocationTargetException e) {
                 logger.error("Invocation Target: " + e.getMessage());
+                logger.error("Underlying exception: " + e.getCause().getMessage());
             } catch (NoSuchMethodException e) {
                 logger.error("No Such Method: " + e.getMessage());
             }
