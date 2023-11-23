@@ -29,6 +29,10 @@ public class Launcher {
     private static final Logger logger = LoggerFactory.getLogger(Launcher.class);
 
     public static void main(String[] args) {
+        // Disable JOOQ logo and tip of the day
+        System.setProperty("org.jooq.no-tips", "true");
+        System.setProperty("org.jooq.no-logo", "true");
+
         // Initialize config with GSON
         Config config;
         Gson gson = new Gson();
@@ -68,10 +72,10 @@ public class Launcher {
         );
 
         try {
-            logger.info("testing db");
+            logger.debug("testing db");
             DatabaseManager.testConnection();
         } catch (Exception e) {
-            logger.info(e.getMessage());
+            logger.error(e.getMessage());
         }
 
         // Create JDA object and register listeners

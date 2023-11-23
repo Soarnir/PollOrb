@@ -30,11 +30,11 @@ public class DatabaseManager {
     }
 
     public static void testConnection() throws SQLException {
-        logger.info("Testing connection");
+        logger.debug("Testing connection");
         Statement statement = connection.createStatement();
         ResultSet resultSet = statement.executeQuery("SELECT COUNT(*) FROM guilds");
         while (resultSet.next()) {
-            logger.info("Rows: " + resultSet.getString(1));
+            logger.debug("Rows: " + resultSet.getString(1));
         }
         resultSet.close();
         statement.close();
@@ -42,17 +42,17 @@ public class DatabaseManager {
 
     public static void query(String sql) {
         try {
-            logger.info("Running SQL: " + sql);
-            logger.info("Rows updated: " + queryRunner.update(connection, sql));
+            logger.debug("Running SQL: " + sql);
+            logger.debug("Rows updated: " + queryRunner.update(connection, sql));
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public static <Type> void select(String sql, ResultSetHandler<Type> resultSetHandler) {
+    public static <Type> Type select(String sql, ResultSetHandler<Type> resultSetHandler) {
         try {
-            logger.info("Running SQL: " + sql);
-            queryRunner.query(connection, sql, resultSetHandler);
+            logger.debug("Running SQL: " + sql);
+            return queryRunner.query(connection, sql, resultSetHandler);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

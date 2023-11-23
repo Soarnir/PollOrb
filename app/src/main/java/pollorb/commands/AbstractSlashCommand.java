@@ -133,6 +133,12 @@ public abstract class AbstractSlashCommand extends AbstractCommand {
                 .build();
     }
 
+    /**
+     * Static method for sending an error embed response to the user.
+     *
+     * @param event Slash Command Event
+     * @param errorResponse String response to user
+     */
     public static void errorEmbed(SlashCommandInteractionEvent event, String errorResponse) {
         MessageEmbed messageEmbed = new EmbedBuilder()
             .addField("Error", errorResponse, false)
@@ -141,6 +147,14 @@ public abstract class AbstractSlashCommand extends AbstractCommand {
         event.replyEmbeds(messageEmbed).setEphemeral(true).queue();
     }
 
+    /**
+     * Static method for sending and error embed response to the user.
+     * This will usually be invoked if a slash command event is not available,
+     * In most cases this will be because it is a multi-stage command like the poll wizard.
+     *
+     * @param hook
+     * @param errorResponse
+     */
     public void errorEmbed(InteractionHook hook, String errorResponse) {
         MessageEmbed messageEmbed = new EmbedBuilder()
             .addField("Error", errorResponse, false)

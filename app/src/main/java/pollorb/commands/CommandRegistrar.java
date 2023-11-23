@@ -54,13 +54,13 @@ public class CommandRegistrar {
 
         // Filter out all abstract classes
         commandClasses.removeIf(aClass -> Modifier.isAbstract(aClass.getModifiers()));
-        logger.info("Iterating through commands");
+        logger.debug("Iterating through commands");
 
         // Iterate over each commandClass and place it in its appropriate command map
         commandClasses.forEach(commandClass -> {
             AbstractCommand command = null;
             try {
-                logger.info("Initializing command: " + commandClass.getName());
+                logger.debug("Initializing command: " + commandClass.getName());
                 command = commandClass.getDeclaredConstructor().newInstance();
             } catch (InstantiationException e) {
                 logger.error("Instantiation: " + e.getMessage());
@@ -76,12 +76,12 @@ public class CommandRegistrar {
             }
             if (command != null) {
                 if (command instanceof AbstractSlashCommand) {
-                    logger.info("Slash command: " + command.getName() + " added to slash command list");
+                    logger.debug("Slash command: " + command.getName() + " added to slash command list");
                     command.buildHelp();
                     slashCommands.put(command.getName(), (AbstractSlashCommand) command);
                     fullCommandMap.put(command.getName(), command);
                 } else {
-                    logger.info("Text command: " + command.getName() + " added to command list");
+                    logger.debug("Text command: " + command.getName() + " added to command list");
                     command.buildHelp();
                     commands.put(command.getName(), command);
                     fullCommandMap.put(command.getName(), command);
@@ -124,7 +124,7 @@ public class CommandRegistrar {
             slashCommandList.addCommands(slashCommandData);
         });
 
-        logger.info("Built: " + slashCommandList);
+        logger.debug("Built: " + slashCommandList);
 
         slashCommandList.queue();
     }

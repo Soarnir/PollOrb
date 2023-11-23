@@ -91,12 +91,6 @@ dependencies {
     // JOOQ
     implementation("org.jooq:jooq:3.18.7")
 
-    // Persistence
-    implementation("javax.persistence:javax.persistence-api:2.2")
-
-    // Guava
-    implementation("com.google.guava:guava:31.1-jre")
-
     // Gson
     implementation("com.google.code.gson:gson:2.10.1")
 
@@ -109,15 +103,15 @@ dependencies {
     // Reflections
     implementation("org.reflections:reflections:0.10.2")
 
-    // -----------
+    // --------------
     // JOOQ
-    // -----------
+    // --------------
 
     jooqGenerator("org.postgresql:postgresql:42.6.0")
 
-    // -----------
+    // --------------
     // RuntimeOnly
-    // -----------
+    // --------------
 
     // PostgreSQL
     runtimeOnly("com.h2database:h2:2.2.224")

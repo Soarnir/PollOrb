@@ -78,7 +78,7 @@ public class LocalizeTimeCommand extends AbstractSlashCommand {
                         Integer.parseInt(dateArray[2])
                     );
                 } else {
-                    errorEmbed(event.getHook(), formatError);
+                    errorEmbed(event, formatError);
                     return;
                 }
 
@@ -112,14 +112,14 @@ public class LocalizeTimeCommand extends AbstractSlashCommand {
                 }
 
             } else {
-                errorEmbed(event.getHook(), formatError);
+                errorEmbed(event, formatError);
                 return;
             }
 
             inputDateTime = ZonedDateTime.of(inputDate, inputTime, timezoneInput);
 
-            logger.info(inputDateTime.toString());
-            logger.info(String.valueOf(inputDateTime.toEpochSecond()));
+            logger.debug(inputDateTime.toString());
+            logger.debug(String.valueOf(inputDateTime.toEpochSecond()));
 
             String response = "<t:" + inputDateTime.toEpochSecond() + ">";
 
@@ -131,7 +131,7 @@ public class LocalizeTimeCommand extends AbstractSlashCommand {
 
             event.getHook().sendMessage(response).queue();
         } catch (IllegalStateException | DateTimeException e) {
-            errorEmbed(event.getHook(), e.getMessage());
+            errorEmbed(event, e.getMessage());
         }
     }
 }
