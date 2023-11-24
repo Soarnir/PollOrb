@@ -8,4 +8,6 @@ ignored/
 
 logs/
 
+app/src/generated/
+
 app/src/main/resources/application.properties
