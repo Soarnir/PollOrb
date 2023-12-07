@@ -1,6 +1,8 @@
 package pollorb.commands;
 
 import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
@@ -120,6 +122,10 @@ public class CommandRegistrar {
             slashCommandData.addOptions(slashCommand.slashCommandOptionList);
 
             slashCommandData.addSubcommands(slashCommand.subcommandDataList);
+
+            if (slashCommand.getCommandLevel() == CommandLevel.ADMINISTRATIVE) {
+                slashCommandData.setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR));
+            }
 
             slashCommandList.addCommands(slashCommandData);
         });

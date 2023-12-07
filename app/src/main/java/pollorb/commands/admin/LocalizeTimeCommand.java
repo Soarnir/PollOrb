@@ -16,7 +16,10 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
+/**
+ * @author Soarnir
+ * @since 0.1.0
+ */
 public class LocalizeTimeCommand extends AbstractSlashCommand {
 
     private static final Logger logger = LoggerFactory.getLogger(LocalizeTimeCommand.class);
@@ -24,12 +27,11 @@ public class LocalizeTimeCommand extends AbstractSlashCommand {
 
     public LocalizeTimeCommand() {
         super("localize", "Create automatically localized dates and times, defaults to UTC", CommandLevel.EVERYONE, List.of(ContextualRequirements.ROLE));
-        List<OptionData> optionDataSet = List.of(
+        this.slashCommandOptionList = List.of(
             new OptionData(OptionType.STRING, "datetime", "ISO8601 formatted time, for example:\n2023-01-01T20:20:20Z", true),
             new OptionData(OptionType.STRING, "timezone", "what your timezone is, defaults to UTC", false),
             new OptionData(OptionType.BOOLEAN, "raw", "Get unformatted response", false)
         );
-        this.slashCommandOptionList.addAll(optionDataSet);
         this.helpMessage = "Use ISO8601 format, eg. `2023-07-23T22:45`";
         this.examples = """
             `/localize datetime 2023-09-23`
