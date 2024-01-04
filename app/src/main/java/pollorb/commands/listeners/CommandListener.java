@@ -16,11 +16,13 @@ import org.slf4j.LoggerFactory;
 import pollorb.commands.AbstractCommand;
 import pollorb.commands.AbstractSlashCommand;
 import pollorb.commands.CommandRegistrar;
+import pollorb.commands.polls.PollHandler;
 import pollorb.database.tablehandlers.CommandStatsHandler;
 import pollorb.database.tablehandlers.GuildConfigHandler;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -39,10 +41,13 @@ public class CommandListener extends ListenerAdapter {
     private static Map<String, AbstractCommand> commandMap = new HashMap<>();
     private static Map<String, AbstractSlashCommand> slashCommandMap = new HashMap<>();
     private static String prefix = "!";
+    private static final Pattern UUID_REGEX;
 
     static {
         CommandListener.commandMap = CommandRegistrar.getCommandMap();
         CommandListener.slashCommandMap = CommandRegistrar.getSlashCommandMap();
+        // Courtesy of Baeldung https://www.baeldung.com/java-validate-uuid-string
+        UUID_REGEX = Pattern.compile("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
     }
 
     /**
@@ -77,7 +82,7 @@ public class CommandListener extends ListenerAdapter {
                             // Handle command
                             updateCommandStats(command.getName(), event.getGuild(), event.getAuthor());
                             sendLogMessage(command, event.getMessage().getContentDisplay(), event.getGuild(), event.getAuthor(), event.getChannel().asTextChannel());
-                            command.handle(event);
+                            command.handleCommand(event);
                         } else {
                             AbstractCommand.errorEmbed(event, command.getCommandLevel().getError());
                         }
@@ -204,8 +209,8 @@ public class CommandListener extends ListenerAdapter {
             EmbedBuilder embedBuilder = new EmbedBuilder();
             embedBuilder.setTitle("Text command used")
                 .setThumbnail("https://cdn.discordapp.com/attachments/1162040736804507738/1182149531249410168/text.png")
-                .setDescription(command.getName())
-                .addField("User", user.getAsMention(), true)
+                .setDescription("`" + command.getName() + "`")
+                .addField("By user", user.getAsMention(), true)
                 .addField("In channel", textChannel.getAsMention(), true);
             if (command.getName().contains(" ")) {
                 embedBuilder.addField("Arguments", fullCommand.substring(commandIndex), false);
@@ -224,10 +229,24 @@ public class CommandListener extends ListenerAdapter {
             EmbedBuilder embedBuilder = new EmbedBuilder();
             embedBuilder.setTitle("Slash command used")
                 .setThumbnail("https://cdn.discordapp.com/attachments/1162040736804507738/1182148898857418822/slash.png")
-                .setDescription(command.getName())
-                .addField("Arguments", fullCommand.substring(commandIndex), false)
+                .setDescription("`" + command.getName() + "`")
                 .addField("By user", user.getAsMention(), true)
                 .addField("In channel", textChannel.getAsMention(), true);
+            if (command.getName().contains(" ")) {
+                embedBuilder.addField("Arguments", fullCommand.substring(commandIndex), false);
+            }
+
+            logChannel.sendMessageEmbeds(embedBuilder.build()).queue();
+        }
+    }
+
+    public void sendLogMessage(Guild guild, String title, String text) {
+        TextChannel logChannel = guild.getChannelById(TextChannel.class, GuildConfigHandler.getGuildConfig(guild.getIdLong()).getLoggingChannel());
+
+        if (logChannel != null) {
+            EmbedBuilder embedBuilder = new EmbedBuilder();
+            embedBuilder.setTitle(title)
+                .setDescription(text);
 
             logChannel.sendMessageEmbeds(embedBuilder.build()).queue();
         }
@@ -238,6 +257,7 @@ public class CommandListener extends ListenerAdapter {
      * <p>
      * IMPORTANT NAMING CONVENTION
      * Each button id must be <command name>.<button id>
+     * For polls this is <poll id>.<poll option id>
      *
      * @param event Button interaction event
      */
@@ -245,8 +265,17 @@ public class CommandListener extends ListenerAdapter {
     public void onButtonInteraction(@NotNull ButtonInteractionEvent event) {
         logger.debug("Received button event");
         if (event.isFromGuild()) {
-            logger.debug("Sending button event to responsible handler");
-            slashCommandMap.get(event.getComponentId().split("\\.")[0]).handleButtonInteraction(event);
+            Matcher UUIDMatcher = UUID_REGEX.matcher(event.getComponentId().split("\\.")[0]);
+            if (UUIDMatcher.matches()) {
+                UUID pollID = UUID.fromString(event.getComponentId().split("\\.")[0]);
+                int option = Integer.parseInt(event.getComponentId().split("\\.")[1]);
+                event.deferReply(true).queue();
+                PollHandler.voteForPoll(event, pollID, option, event.getUser());
+                sendLogMessage(event.getGuild(), "Button pressed", "Option #" + option);
+            } else {
+                logger.debug("Sending button event to responsible handler");
+                slashCommandMap.get(event.getComponentId().split("\\.")[0]).handleButtonInteraction(event);
+            }
         }
     }
 }

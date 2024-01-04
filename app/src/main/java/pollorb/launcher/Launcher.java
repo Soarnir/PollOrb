@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pollorb.commands.CommandRegistrar;
 import pollorb.commands.listeners.CommandListener;
+import pollorb.commands.polls.PollHandler;
 import pollorb.database.DatabaseManager;
 
 import java.io.File;
@@ -55,6 +56,7 @@ public class Launcher {
         logger.info("Initializing Bot");
         CommandRegistrar.initialize();
         CommandListener.initialize();
+        PollHandler.initialize();
         DatabaseManager.url = config.database_url;
         DatabaseManager.username = config.database_username;
         DatabaseManager.password = config.database_password;
