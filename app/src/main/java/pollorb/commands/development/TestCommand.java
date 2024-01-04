@@ -1,4 +1,4 @@
-package pollorb.commands.admin;
+package pollorb.commands.development;
 
 import pollorb.commands.AbstractCommand;
 import pollorb.commands.CommandLevel;

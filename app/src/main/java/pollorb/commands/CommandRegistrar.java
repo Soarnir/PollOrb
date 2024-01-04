@@ -9,7 +9,7 @@ import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
 import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pollorb.commands.admin.LaserCommand;
+import pollorb.commands.fun.LaserCommand;
 import pollorb.commands.polls.PollCommand;
 
 import java.lang.reflect.InvocationTargetException;

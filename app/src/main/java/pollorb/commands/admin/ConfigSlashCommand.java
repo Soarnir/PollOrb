@@ -29,17 +29,15 @@ import java.util.Objects;
  * @author Soarnir
  * @since 0.1.0
  */
-public class ConfigCommand extends AbstractSlashCommand {
+public class ConfigSlashCommand extends AbstractSlashCommand {
 
     private static MessageEmbed botConfigEmbed;
     private static MessageEmbed developmentConfigEmbed;
     private static MessageEmbed adminConfigEmbed;
     private static MessageEmbed funConfigEmbed;
-    private GuildConfig guildConfig;
-    private Guild guild;
-    private static final Logger logger = LoggerFactory.getLogger(ConfigCommand.class);
+    private static final Logger logger = LoggerFactory.getLogger(ConfigSlashCommand.class);
 
-    public ConfigCommand() {
+    public ConfigSlashCommand() {
         super("config", "Configure things", CommandLevel.ADMINISTRATIVE, List.of(ContextualRequirements.ROLE));
         this.slashCommandOptionList = List.of(
             new OptionData(OptionType.STRING, "set", "The config to configure", false),
@@ -49,54 +47,47 @@ public class ConfigCommand extends AbstractSlashCommand {
 
     @Override
     public void handleSlashCommand(SlashCommandInteractionEvent event) {
-        guild = event.getGuild();
-        guildConfig = GuildConfigHandler.getGuildConfig(guild.getIdLong());
+        Guild guild = event.getGuild();
+        GuildConfig guildConfig = GuildConfigHandler.getGuildConfig(guild.getIdLong());
         String setOption = event.getOption("set") == null ? "" : event.getOption("set", OptionMapping::getAsString);
         String valueOption = event.getOption("value") == null ? "" :event.getOption("value", OptionMapping::getAsString);
 
         if (!setOption.isEmpty() && !valueOption.isEmpty()) {
             // Both options provided
             switch (setOption.toLowerCase()) {
-                case "logchannel", "log":
+                case "logchannel", "logc":
                     TextChannel textChannel = guild.getTextChannelById(valueOption.substring(2, valueOption.length() - 1));
                     if (textChannel == null) {
                         errorEmbed(event, "Could not find channel");
                     } else if (!textChannel.canTalk()) {
                         errorEmbed(event, "I do not have permission to post in that channel");
                     } else {
+                        String oldChannelMention = "Not Set";
                         long oldChannel = guildConfig.getLoggingChannel();
+                        if (oldChannel != 0L) oldChannelMention = guild.getChannelById(TextChannel.class, oldChannel).getAsMention();
                         guildConfig.setLoggingChannel(textChannel.getIdLong());
                         GuildConfigHandler.update(guild.getIdLong(), guildConfig);
-                        EmbedBuilder embedBuilder = new EmbedBuilder();
-                        embedBuilder.setColor(new Color(123,123,123))
-                            .setTitle("Config updated")
-                            .setDescription("*Log channel for " + event.getGuild().getName() + " updated*")
-                            .addField("From", guild.getChannelById(TextChannel.class, oldChannel).getAsMention(), true)
-                            .addField("To", textChannel.getAsMention(), true)
-                            .setFooter("Footer text");
-                        event.replyEmbeds(embedBuilder.build()).queue();
+                        sendConfigMessage(event, "Log channel", oldChannelMention, textChannel.getAsMention());
                     }
                     return;
-                case "managementrole":
+                case "managementrole", "mrole":
                     Role role = guild.getRoleById(valueOption.substring(3, valueOption.length() - 1));
                     if (role == null) {
                         errorEmbed(event, "Could not find a valid role");
                     } else {
+                        String oldRoleMention = "Not set";
                         long oldRole = guildConfig.getGuildBotManager();
+                        if (oldRole != 0L) oldRoleMention = guild.getRoleById(oldRole).getAsMention();
                         guildConfig.setGuildBotManager(role.getIdLong());
                         GuildConfigHandler.update(guild.getIdLong(), guildConfig);
-                        EmbedBuilder embedBuilder = new EmbedBuilder();
-                        embedBuilder.setColor(new Color(123,123,123))
-                            .setTitle("Config updated")
-                            .setDescription("*Managenent role for " + event.getGuild().getName() + " updated*")
-                            .addField("From", guild.getRoleById(oldRole).getAsMention(), true)
-                            .addField("To", role.getAsMention(), true)
-                            .setFooter("Footer text");
-                        event.replyEmbeds(embedBuilder.build()).queue();
+                        sendConfigMessage(event, "Management role", oldRoleMention, role.getAsMention());
                     }
-                    return;
+                case "prefix":
+                    String oldPrefix = guildConfig.getPrefix();
+                    guildConfig.setPrefix(valueOption);
+                    GuildConfigHandler.update(guild.getIdLong(), guildConfig);
+                    sendConfigMessage(event, "Prefix", oldPrefix, valueOption);
             }
-
         } else if (!setOption.isEmpty()) {
             // Only set provided
             errorEmbed(event, "You need to provide a value for this config as well.");
@@ -112,10 +103,10 @@ public class ConfigCommand extends AbstractSlashCommand {
                 .setFooter("Footer text");
 
             // Build config embeds
-            botConfigEmbed = botConfigEmbed(event, embedBuilder);
-            developmentConfigEmbed = developmentConfigEmbed(event, embedBuilder);
-            adminConfigEmbed = adminConfigEmbed(event, embedBuilder);
-            funConfigEmbed = funConfigEmbed(event, embedBuilder);
+            botConfigEmbed = botConfigEmbed(event, guild, guildConfig, embedBuilder);
+            developmentConfigEmbed = developmentConfigEmbed(event, guild, guildConfig, embedBuilder);
+            adminConfigEmbed = adminConfigEmbed(event, guild, guildConfig, embedBuilder);
+            funConfigEmbed = funConfigEmbed(event, guild, guildConfig, embedBuilder);
 
             // Left and right
             // Button.of(ButtonStyle.SUCCESS, "left", "Left").withEmoji(Emoji.fromUnicode("U+2B05 U+FE0F")),
@@ -153,44 +144,60 @@ public class ConfigCommand extends AbstractSlashCommand {
 
     // may convert these to make use of categories in order to generate embeds, multiple separate methods may
     // not be worthwhile to maintain
-    public MessageEmbed botConfigEmbed(SlashCommandInteractionEvent event, EmbedBuilder embedBuilder) {
+    public MessageEmbed botConfigEmbed(SlashCommandInteractionEvent event, Guild guild, GuildConfig guildConfig, EmbedBuilder embedBuilder) {
         EmbedBuilder embedBuilderInt = new EmbedBuilder(embedBuilder);
-
+        embedBuilderInt.setColor(new Color(0, 0, 0))
+            .setTitle("Bot Config")
+            .setDescription("*Configuration for PollOrb*");
 
         return embedBuilderInt.build();
     }
 
-    public MessageEmbed developmentConfigEmbed(SlashCommandInteractionEvent event, EmbedBuilder embedBuilder) {
+    public MessageEmbed developmentConfigEmbed(SlashCommandInteractionEvent event, Guild guild, GuildConfig guildConfig, EmbedBuilder embedBuilder) {
         EmbedBuilder embedBuilderInt = new EmbedBuilder(embedBuilder);
 
         return embedBuilderInt.build();
     }
 
-    public MessageEmbed adminConfigEmbed(SlashCommandInteractionEvent event, EmbedBuilder embedBuilder) {
+    public MessageEmbed adminConfigEmbed(SlashCommandInteractionEvent event, Guild guild, GuildConfig guildConfig, EmbedBuilder embedBuilder) {
         EmbedBuilder embedBuilderInt = new EmbedBuilder(embedBuilder);
 
         // Bot management
         String role = guildConfig.getGuildBotManager() == 0L ? "Not set" : guild.getRoleById(guildConfig.getGuildBotManager()).getAsMention();
-        embedBuilderInt.addField("Management role | managementrole",
-            role + "\n*Note that admins can always configure the bot, this config allows users with this role administrative permissions over the bot, such as moderators.*",
+        embedBuilderInt.addField("Management role",
+            role + "\n*Config aliases:* `managementrole, mrole`" +
+                "\n*Note that admins can always configure the bot, this config allows users with this role administrative permissions over the bot, such as moderators.*",
             false);
 
         // Logging channel
         String channel = guildConfig.getLoggingChannel() == 0L ? "Not set" : (guild.getGuildChannelById(guildConfig.getLoggingChannel()).getAsMention());
-        embedBuilderInt.addField("Logging channel | logchannel",
-            channel,
+        embedBuilderInt.addField("Logging channel",
+            channel + "\n*Config aliases:* `logchannel, logc`",
             false);
 
         // Prefix
-        embedBuilderInt.addField("Prefix", "`" + guildConfig.getPrefix() + "`", false);
+        embedBuilderInt.addField("Prefix",
+            "`" + guildConfig.getPrefix() + "`" +
+                "\n*Config aliases:* `prefix`",
+            false);
 
         return embedBuilderInt.build();
     }
 
-    public MessageEmbed funConfigEmbed(SlashCommandInteractionEvent event, EmbedBuilder embedBuilder) {
+    public MessageEmbed funConfigEmbed(SlashCommandInteractionEvent event, Guild guild, GuildConfig guildConfig, EmbedBuilder embedBuilder) {
         EmbedBuilder embedBuilderInt = new EmbedBuilder(embedBuilder);
 
-
         return embedBuilderInt.build();
+    }
+
+    public void sendConfigMessage(SlashCommandInteractionEvent event, String config, String oldConfigValue, String newConfigValue) {
+        EmbedBuilder embedBuilder = new EmbedBuilder();
+        embedBuilder.setColor(new Color(123,123,123))
+            .setTitle("Config updated")
+            .setDescription("*" + config + " for " + event.getGuild().getName() + " updated*")
+            .addField("From", oldConfigValue, true)
+            .addField("To", newConfigValue, true)
+            .setFooter("Footer text");
+        event.replyEmbeds(embedBuilder.build()).queue();
     }
 }

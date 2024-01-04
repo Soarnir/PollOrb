@@ -84,6 +84,9 @@ public abstract class AbstractCommand {
         this.contextualRequirements = requirements;
     }
 
+    /**
+     * Build help embed, this ensures we always have a valid embed to send with the help command
+     */
     public void buildHelp() {
         this.helpMessageEmbed =
             new EmbedBuilder()
@@ -96,6 +99,12 @@ public abstract class AbstractCommand {
                 .build();
     }
 
+    /**
+     * Send an embedded error message to origin event
+     *
+     * @param event original command message event
+     * @param errorResponse error message
+     */
     public static void errorEmbed(MessageReceivedEvent event, String errorResponse) {
         MessageEmbed messageEmbed = new EmbedBuilder()
             .addField("Error", errorResponse, false)
@@ -108,7 +117,13 @@ public abstract class AbstractCommand {
         this.helpMessageEmbed = helpMessageEmbed;
     }
 
-    public void handle(MessageReceivedEvent event) {
+    /**
+     * Baseline handle for command, sends simple text response
+     * Should essentially always be overridden by implementing command.
+     *
+     * @param event command message event
+     */
+    public void handleCommand(MessageReceivedEvent event) {
         event.getChannel().sendMessage(response).queue();
     }
 }

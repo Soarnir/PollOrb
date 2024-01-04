@@ -20,12 +20,12 @@ import java.util.regex.Pattern;
  * @author Soarnir
  * @since 0.1.0
  */
-public class LocalizeTimeCommand extends AbstractSlashCommand {
+public class LocalizeTimeSlashCommand extends AbstractSlashCommand {
 
-    private static final Logger logger = LoggerFactory.getLogger(LocalizeTimeCommand.class);
+    private static final Logger logger = LoggerFactory.getLogger(LocalizeTimeSlashCommand.class);
     private final String formatError = "Please follow the format: `YYYY-MM-DDThh:mm:ss` \nThis is the baseline but you do not need to enter any time values, just to the accuracy you need.";
 
-    public LocalizeTimeCommand() {
+    public LocalizeTimeSlashCommand() {
         super("localize", "Create automatically localized dates and times, defaults to UTC", CommandLevel.EVERYONE, List.of(ContextualRequirements.ROLE));
         this.slashCommandOptionList = List.of(
             new OptionData(OptionType.STRING, "datetime", "ISO8601 formatted time, for example:\n2023-01-01T20:20:20Z", true),

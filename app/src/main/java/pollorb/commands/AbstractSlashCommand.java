@@ -155,12 +155,12 @@ public abstract class AbstractSlashCommand extends AbstractCommand {
      * @param hook
      * @param errorResponse
      */
-    public void errorEmbed(InteractionHook hook, String errorResponse) {
+    public static void errorEmbed(InteractionHook hook, String errorResponse) {
         MessageEmbed messageEmbed = new EmbedBuilder()
             .addField("Error", errorResponse, false)
             .setColor(new Color(140, 0, 0))
             .build();
-        hook.sendMessageEmbeds(messageEmbed).queue();
+        hook.sendMessageEmbeds(messageEmbed).setEphemeral(true).queue();
     }
 
     /**

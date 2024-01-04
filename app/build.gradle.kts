@@ -6,7 +6,7 @@ import org.jooq.meta.jaxb.ForcedType
 plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
     application
-    java
+    id("java")
     id("nu.studer.jooq") version "8.2"
 }
 
@@ -78,48 +78,67 @@ jooq {
 dependencies {
     // Tests
     // Use JUnit test framework.
-    testImplementation("org.junit.jupiter:junit-jupiter:5.10.0")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
+    // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.1")
+
+    // https://mvnrepository.com/artifact/org.junit.platform/junit-platform-launcher
+    testImplementation("org.junit.platform:junit-platform-launcher:1.10.1")
 
     // --------------
     // Implementation
     // --------------
 
     // DBUtils
+    // https://mvnrepository.com/artifact/commons-dbutils/commons-dbutils
     implementation("commons-dbutils:commons-dbutils:1.8.1")
 
     // JOOQ
-    implementation("org.jooq:jooq:3.18.7")
+    // https://mvnrepository.com/artifact/org.jooq/jooq
+    implementation("org.jooq:jooq:3.19.1")
 
     // Gson
+    // https://mvnrepository.com/artifact/com.google.code.gson/gson
     implementation("com.google.code.gson:gson:2.10.1")
 
     // JDA
-    implementation("net.dv8tion:JDA:5.0.0-beta.15")
+    // https://mvnrepository.com/artifact/net.dv8tion/JDA
+    implementation("net.dv8tion:JDA:5.0.0-beta.18")
 
     // Logback
-    implementation("ch.qos.logback:logback-classic:1.4.6")
+    // https://mvnrepository.com/artifact/ch.qos.logback/logback-classic
+    implementation("ch.qos.logback:logback-classic:1.4.14")
 
     // Reflections
+    // https://mvnrepository.com/artifact/org.reflections/reflections
     implementation("org.reflections:reflections:0.10.2")
+
+    // Quartz
+    // https://mvnrepository.com/artifact/org.quartz-scheduler/quartz
+    implementation("org.quartz-scheduler:quartz:2.3.2")
+
 
     // --------------
     // JOOQ
     // --------------
 
-    jooqGenerator("org.postgresql:postgresql:42.6.0")
+    jooqGenerator("org.postgresql:postgresql:42.7.1")
 
     // --------------
     // RuntimeOnly
     // --------------
 
     // PostgreSQL
+    // https://mvnrepository.com/artifact/com.h2database/h2
     runtimeOnly("com.h2database:h2:2.2.224")
-    runtimeOnly("org.postgresql:postgresql:42.6.0")
+
+    // https://mvnrepository.com/artifact/org.postgresql/postgresql
+    runtimeOnly("org.postgresql:postgresql:42.7.1")
 }
 
 // Apply a specific Java toolchain to ease working on different environments.
 java {
+    sourceCompatibility = JavaVersion.VERSION_17
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(17))
     }

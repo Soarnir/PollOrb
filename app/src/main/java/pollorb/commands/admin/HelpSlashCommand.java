@@ -11,11 +11,11 @@ import pollorb.commands.*;
 import java.util.List;
 import java.util.Objects;
 
-public class HelpCommand extends AbstractSlashCommand {
+public class HelpSlashCommand extends AbstractSlashCommand {
 
-    private static final Logger logger = LoggerFactory.getLogger(HelpCommand.class);
+    private static final Logger logger = LoggerFactory.getLogger(HelpSlashCommand.class);
 
-    public HelpCommand() {
+    public HelpSlashCommand() {
         super("help", "Get help on parts of the bot", CommandLevel.EVERYONE, List.of(ContextualRequirements.ROLE));
         List<SubcommandData> subcommandDataList = List.of(
             new SubcommandData("command", "get help with a command")
@@ -53,9 +53,6 @@ public class HelpCommand extends AbstractSlashCommand {
                 return;
             case "general":
                 errorEmbed(event, "general help isn't a thing yet!");
-                return;
-            default:
-
         }
     }
 }
